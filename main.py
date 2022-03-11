@@ -6,7 +6,7 @@ from apache_beam.options.pipeline_options import PipelineOptions, StandardOption
 
 GOOGLE_CLOUD_PROJECT = "thappy"
 PUBSUB_SUBSCRIPTION = f"projects/{GOOGLE_CLOUD_PROJECT}/subscriptions/data-sub"
-BIGQUERY_TABLE = "test_table"
+BIGQUERY_TABLE = "thappy:thappy.my_table"
 BIGQUERY_SCHEMA = "key:STRING,value:STRING"
 
 
@@ -20,7 +20,8 @@ class ParseInputData(beam.DoFn):
         https://beam.apache.org/releases/pydoc/2.7.0/apache_beam.transforms.core.html#apache_beam.transforms.core.DoFn
         """
         parsed = json.loads(element.decode("utf-8"))
-        parsed["timestamp"] = timestamp.to_rfc3339()
+        parsed["value"] += "_new"
+        print(parsed)
         yield parsed
 
 
