@@ -1,0 +1,100 @@
+---
+steps:
+  - id: branch name
+    name: alpine
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        echo "***********************"
+        echo "$BRANCH_NAME"
+        echo "***********************"
+  - id: tf validate
+    name: gcr.io/dol-pua-terraform-prod/dol-pua-tf-gcloud
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        if [ -d "env/$BRANCH_NAME/" ]; then
+          cd env/$BRANCH_NAME
+          terraform fmt -recursive
+          terraform init -backend=false
+          terraform validate . || exit 1
+        else
+          for dir in env/*/
+          do
+            cd ${dir}
+            env=${dir%*/}
+            env=${env#*/}
+            echo ""
+            echo "*************** TERRAFORM INIT ******************"
+            echo "******* At environment: ${env} ********"
+            echo "*************************************************"
+            terraform fmt -recursive
+            terraform init -backend=false
+            terraform validate . || exit 1
+            cd ../../
+          done
+        fi
+  - id: tf init
+    name: gcr.io/dol-pua-terraform-prod/dol-pua-tf-gcloud
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        if [ -d "env/$BRANCH_NAME/" ]; then
+          cd env/$BRANCH_NAME
+          terraform init
+        else
+          for dir in env/*/
+          do
+            cd ${dir}
+            env=${dir%*/}
+            env=${env#*/}
+            echo ""
+            echo "*************** TERRAFORM INIT ******************"
+            echo "******* At environment: ${env} ********"
+            echo "*************************************************"
+            terraform init || exit 1
+            cd ../../
+          done
+        fi
+  - id: tf plan
+    name: gcr.io/dol-pua-terraform-prod/dol-pua-tf-gcloud
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        if [ -d "env/$BRANCH_NAME/" ]; then
+          cd env/$BRANCH_NAME
+          terraform plan
+        else
+          for dir in env/*/
+          do
+            cd ${dir}
+            env=${dir%*/}
+            env=${env#*/}
+            echo ""
+            echo "*************** TERRAFOM PLAN ******************"
+            echo "******* At environment: ${env} ********"
+            echo "*************************************************"
+            terraform plan || exit 1
+            cd ../../
+          done
+        fi
+  - id: tf apply
+    name: gcr.io/dol-pua-terraform-prod/dol-pua-tf-gcloud
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        if [ -d "env/$BRANCH_NAME/" ]; then
+          cd env/$BRANCH_NAME
+          terraform apply -auto-approve
+        else
+          echo "******************** SKIPPING APPLYING ************************"
+          echo "Branch '$BRANCH_NAME' does not represent an oficial environment"
+          echo "***************************************************************"
+        fi
+logsBucket: 'gs://dol-pua-terraform-prod-logs-bucket'
+timeout: 1800s
