@@ -6,7 +6,7 @@ import time
 publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path("thappy", "topic")
 stocks = ["ALPHABET_INC", "BOEING_CORP", "CITADEL", "DELTA_AIR"]
-message_count = 4
+message_count = 100_000
 publish_futures = []
 price = 10.0
 
@@ -16,7 +16,9 @@ for i in range(message_count):
 		price = round(price + 0.10, 2)
 		publish_future = publisher.publish(topic_path, data)
 		publish_futures.append(publish_future)
-	time.sleep(1)	
+	# time.sleep(1)
 
 for future in publish_futures:
-	print(future.result())
+	future.result()
+
+print("Messages published!")
