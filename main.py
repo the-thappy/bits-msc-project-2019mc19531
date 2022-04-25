@@ -16,6 +16,7 @@ window_size = timedelta(minutes=1).total_seconds()  # in seconds
 
 
 def add_key_func(element):
+    import json
     element = json.loads(element.decode("utf-8"))
     return (element["TICKER"], element)
 
@@ -25,6 +26,7 @@ class ParseInputData(beam.DoFn):
 
     def process(self, element, timestamp=beam.DoFn.TimestampParam, window=beam.DoFn.WindowParam):
         # example window - ('ALPHABET_INC', [{'TIME': '2022-04-21 13:30:28.024924', 'TICKER': 'ALPHABET_INC', 'PRICE': 10.0}, {'TIME': '2022-04-21 13:30:29.028450', 'TICKER': 'ALPHABET_INC', 'PRICE': 10.4}, {'TIME': '2022-04-21 13:30:30.033912', 'TICKER': 'ALPHABET_INC', 'PRICE': 10.8}, {'TIME': '2022-04-21 13:30:31.036173', 'TICKER': 'ALPHABET_INC', 'PRICE': 11.2}])
+        from datetime import datetime
         new_element = {"PRICE": 0, "TICKER": element[0], "CURRENT_TS": datetime.now(), "INDICATOR": "BUY"}
         yield new_element
 
